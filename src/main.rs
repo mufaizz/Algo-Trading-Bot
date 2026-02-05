@@ -19,7 +19,7 @@ async fn main() -> anyhow::Result<()> {
     let token = env::var("TELEGRAM_TOKEN").expect("TELEGRAM_TOKEN not set");
     let chat_id = env::var("CHAT_ID").expect("CHAT_ID not set");
     
-    info!("🚀 QUANTUM ENGINE INITIALIZED");
+    info!("🚀 MUFAIZ IS GOAT");
     
     // 2. Create Channels
     let (tx_price, mut rx_price) = mpsc::channel::<f64>(100);
