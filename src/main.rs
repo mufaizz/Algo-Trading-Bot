@@ -1,5 +1,5 @@
 use tokio::sync::mpsc;
-use log::{info, error, warn};
+use log::{info, error};
 use std::env;
 use dotenv::dotenv;
 use std::time::{Duration, Instant};

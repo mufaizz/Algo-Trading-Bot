@@ -82,7 +82,7 @@ impl QuantumSignal {
                 let mut rng = rand::rng();
                 let mut price = current_price;
                 for _ in 0..steps {
-                    let shock = rng.gen_range(-1.0..1.0);
+                    let shock = rng.random_range(-1.0..1.0);
                     price += volatility * shock; 
                 }
                 price
