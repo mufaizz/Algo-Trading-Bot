@@ -29,7 +29,8 @@ pub async fn start_market_stream(tx: tokio::sync::mpsc::Sender<TradeData>) -> an
                                     is_buyer_maker: is_maker,
                                 };
                                 
-                                if let Err(_) = tx.send(trade).await {
+                                // Send data to main loop
+                                if tx.send(trade).await.is_err() {
                                     break; 
                                 }
                             }
