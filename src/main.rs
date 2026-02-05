@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
     let token = env::var("TELEGRAM_TOKEN").expect("TELEGRAM_TOKEN not set");
     let chat_id = env::var("CHAT_ID").expect("CHAT_ID not set");
     
-    info!("🚀 QUANTUM ENGINE + WHALE DETECTOR INITIALIZED");
+    info!("🚀 MUFAIZ THE GOAT");
     
     // Change channel type to TradeData
     let (tx_data, mut rx_data) = mpsc::channel::<model::TradeData>(100);
