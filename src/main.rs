@@ -5,7 +5,7 @@ use dotenv::dotenv;
 use std::time::{Duration, Instant};
 
 // --- IMPORTS ---
-mod binance_client;
+mod client;
 mod model;
 mod telegram;
 mod news_filter;
@@ -33,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
     // SPAWN MARKET STREAM
     tokio::spawn(async move {
         // We assume binance_client is already fixed and working
-        if let Err(e) = binance_client::start_market_stream(tx_data).await {
+        if let Err(e) = client::start_market_stream(tx_data).await {
             error!("CRITICAL: Market stream died: {}", e);
         }
     });
@@ -131,7 +131,8 @@ async fn main() -> anyhow::Result<()> {
             if last_news_check.elapsed() > Duration::from_secs(900) {
                 if oracle.check_danger().await {
                     warn!("⚠️ MARKET HALT: High Impact News.");
-                    tokio::time::sleep(Duration::from_secs(300)).await;
+                    continue
+                    // tokio::time::sleep(Duration::from_secs(300)).await;
                 }
                 last_news_check = Instant::now();
             }
