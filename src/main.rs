@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let token = env::var("TELEGRAM_TOKEN").expect("TELEGRAM_TOKEN not set");
     let chat_id = env::var("CHAT_ID").expect("CHAT_ID not set");
     
-    info!("🚀 QUANTUM ENGINE v3.0 (SCOREBOARD MODE) ONLINE");
+    info!("🚀 MUFAIZ THE GOAT");
     
     let (tx_data, mut rx_data) = mpsc::channel::<model::TradeData>(100);
     let bot = telegram::TelegramBot::new(token, chat_id);
@@ -51,7 +51,7 @@ async fn main() -> anyhow::Result<()> {
                     // CHECK FOR EXPIRED TRADES (Every tick)
                     wallet.update(trade.price);
 
-                    if microstructure.prices.len() >= 60 {
+                    if microstructure.prices.len() >= 20 {
                         let current_price = trade.price;
                         let min = microstructure.prices.iter().fold(f64::INFINITY, |a, &b| a.min(b));
                         let max = microstructure.prices.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
@@ -92,7 +92,7 @@ async fn main() -> anyhow::Result<()> {
                      if trades_processed == 0 {
                          info!("⏳ CONNECTING...");
                      } else if microstructure.prices.len() < 20 {
-                         info!("⏳ CALIBRATING BTC... ({}/60 ticks)", microstructure.prices.len());
+                         info!("⏳ CALIBRATING BTC... ({}/20 ticks)", microstructure.prices.len());
                      } else {
                         let ofi = microstructure.calculate_ofi();
                         let status = if ofi > 0.2 { "🐂" } else if ofi < -0.2 { "🐻" } else { "🦀" };
