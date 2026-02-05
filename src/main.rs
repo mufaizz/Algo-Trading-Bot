@@ -131,8 +131,8 @@ async fn main() -> anyhow::Result<()> {
             if last_news_check.elapsed() > Duration::from_secs(900) {
                 if oracle.check_danger().await {
                     warn!("⚠️ MARKET HALT: High Impact News.");
-                    continue
-                    // tokio::time::sleep(Duration::from_secs(300)).await;
+                    
+                    tokio::time::sleep(Duration::from_secs(300)).await;
                 }
                 last_news_check = Instant::now();
             }
