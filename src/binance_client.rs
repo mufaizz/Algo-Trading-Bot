@@ -1,23 +1,24 @@
 use futures_util::StreamExt;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 use serde_json::Value;
-use log::{info, warn};
+use log::{info, warn, error}; // Now 'warn' is actually used
 use url::Url;
 use crate::model::TradeData;
 
 pub async fn start_market_stream(tx: tokio::sync::mpsc::Sender<TradeData>) -> anyhow::Result<()> {
-    // "aggTrade" stream gives us volume (q) and buyer_maker (m)
-    let url = Url::parse("wss://fstream.binance.com/ws/eurusdt@aggTrade")?;
+    // US EAST FIX: Use Binance.US
+    let url = Url::parse("wss://stream.binance.us:9443/ws/btcusdt@aggTrade")?;
+    
+    info!("🔌 CONNECTING to Binance.US (US East Mode)...");
     
     match connect_async(url).await {
         Ok((mut ws_stream, _)) => {
-            info!("Connected to Binance Institutional Stream (Price + Volume).");
+            info!("✅ SOCKET OPEN. Listening for packets...");
 
             while let Some(message) = ws_stream.next().await {
                 match message {
                     Ok(Message::Text(text)) => {
                         if let Ok(v) = serde_json::from_str::<Value>(&text) {
-                            // Extract Price (p), Quantity (q), and Maker Side (m)
                             let p = v.get("p").and_then(|x| x.as_str()).and_then(|x| x.parse::<f64>().ok());
                             let q = v.get("q").and_then(|x| x.as_str()).and_then(|x| x.parse::<f64>().ok());
                             let m = v.get("m").and_then(|x| x.as_bool());
@@ -29,21 +30,31 @@ pub async fn start_market_stream(tx: tokio::sync::mpsc::Sender<TradeData>) -> an
                                     is_buyer_maker: is_maker,
                                 };
                                 
-                                // Send data to main loop
-                                if tx.send(trade).await.is_err() {
+                                if tx.send(trade).await.is_err() { 
+                                    // [FIX] Using warn here
+                                    warn!("⚠️ Internal Channel Closed. Stopping Stream.");
                                     break; 
+                                }
+                            } else {
+                                // [FIX] Using warn here for bad data
+                                if v.get("e").is_some() {
+                                    warn!("⚠️ Data Parse Warning: Missing Fields in {:?}", v);
                                 }
                             }
                         }
                     }
-                    Ok(Message::Ping(_)) => continue, 
-                    Ok(Message::Close(_)) => break,
-                    Err(e) => warn!("WebSocket Error: {}", e),
+                    Ok(Message::Ping(_)) => continue,
+                    Ok(Message::Close(_)) => {
+                        // [FIX] Using warn here
+                        warn!("❌ SERVER CLOSED CONNECTION");
+                        break;
+                    },
+                    Err(e) => error!("❌ SOCKET ERROR: {}", e),
                     _ => {}
                 }
             }
         }
-        Err(e) => warn!("Connection Failed: {}", e),
+        Err(e) => error!("❌ CONNECTION FAILED: {} (Check Internet)", e),
     }
     Ok(())
 }
